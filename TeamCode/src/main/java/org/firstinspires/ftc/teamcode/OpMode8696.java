@@ -10,7 +10,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
 /**
- * Created by USER on 10/4/2017.
+ * Created by Yegor on 10/4/2017.
  */
 
 public abstract class OpMode8696 extends LinearOpMode {
@@ -28,20 +28,20 @@ public abstract class OpMode8696 extends LinearOpMode {
     VuforiaTrackables relicTrackables;
 
     protected void initRobot() {
-//        leftBack   = hardwareMap.get(DcMotor.class, "leftBack");
-//        rightBack    = hardwareMap.get(DcMotor.class, "rightBack");
-//        leftFront  = hardwareMap.get(DcMotor.class, "leftFront");
-//        rightFront   = hardwareMap.get(DcMotor.class, "rightFront");
+          leftBack   = hardwareMap.get(DcMotor.class, "leftBack");
+          rightBack    = hardwareMap.get(DcMotor.class, "rightBack");
+          leftFront  = hardwareMap.get(DcMotor.class, "leftFront");
+          rightFront   = hardwareMap.get(DcMotor.class, "rightFront");
 
-//        leftBack  .setDirection(DcMotorSimple.Direction.FORWARD);
-//        rightBack .setDirection(DcMotorSimple.Direction.REVERSE);
-//        leftFront .setDirection(DcMotorSimple.Direction.FORWARD);
-//        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-//
-//        rightBack .setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//        leftBack  .setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//        rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//        leftFront .setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+          leftBack  .setDirection(DcMotorSimple.Direction.FORWARD);
+          rightBack .setDirection(DcMotorSimple.Direction.REVERSE);
+          leftFront .setDirection(DcMotorSimple.Direction.FORWARD);
+          rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+  
+          rightBack .setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+          leftBack  .setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+          rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+          leftFront .setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
     }
 
@@ -97,6 +97,12 @@ public abstract class OpMode8696 extends LinearOpMode {
         wasPressed[gamepad] = currPressed;
     }
     
+    /**
+     * Get the button data from one of the gamepads as an int.
+     *
+     * @param gamepad which gamepad to access.
+     */
+    
     private int getButtonsPressed(int gamepad) {
         int currPressed = 0;
         
@@ -118,12 +124,25 @@ public abstract class OpMode8696 extends LinearOpMode {
         
         return currPressed;
     }
+    
+    /**
+     * Run a motor to a position relative to its current position
+     *
+     * @param encoderCounts number of encoder counts to set each target to.
+     * @param speeds speeds to run the motors at
+     * @param motors references to which motors to run
+     */
+    
+    protected void encoderDrive(int[] encoderCounts, double[] speeds, DcMotor[] motors) {
+        // TODO: do this.
+    }
 
     /**
-     * @param angle angle that the robot should move at.
-     *              Starts at standard position.
+     * Drive the robot in a specified direction regardless of its current rotation. Meant to be used with mecanum wheels.
+     *
+     * @param angle angle that the robot should move towards. Starts at standard position.
      */
     protected void driveDirectionRelativeToRobot(double angle) {
-        //TODO: do this. Can't do it now since I don't have a robot to test with.
+        //TODO: do this.
     }
 }
