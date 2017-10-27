@@ -66,7 +66,7 @@ public abstract class OpMode8696 extends LinearOpMode {
     }
 
     protected OpMode8696 addButtonEvent(int gamepad, ButtonEvent event) {
-        buttonEvents[gamepad][event.button.ordinal()] = event;
+        buttonEvents[gamepad-1][event.button.ordinal()] = event;
         return this;
     }
 
@@ -77,6 +77,8 @@ public abstract class OpMode8696 extends LinearOpMode {
 
     private void runButtonEvents(int gamepad) {
         int currPressed = getButtonsPressed(gamepad);
+        
+        gamepad--;
 
         if (currPressed >= 0 && wasPressed[gamepad] >= 0) { // don't bother running if no buttons pressed
             int onDown    =  currPressed & ~wasPressed[gamepad];
