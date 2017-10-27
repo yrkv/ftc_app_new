@@ -5,9 +5,9 @@ package org.firstinspires.ftc.teamcode;
  */
 
 public abstract class ButtonEvent {
-    public BUTTON button;
+    public Button button;
 
-    public ButtonEvent(BUTTON button) {
+    public ButtonEvent(Button button) {
         this.button = button;
     }
 

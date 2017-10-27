@@ -24,8 +24,7 @@ public class TempDrive extends OpMode8696 {
 
 //        initVuforia();
 
-        // I have no idea if this actually works
-        addButtonEvent(new ButtonEvent(BUTTON.A) {
+        addButtonEvent(2, new ButtonEvent(Button.A) {
             private double grabbing = 1;
             private double notGrabbing = 0.7;
 
@@ -37,8 +36,6 @@ public class TempDrive extends OpMode8696 {
 
         waitForStart();
 
-//        boolean servo = false;
-//        boolean wasA = false;
 
         while (opModeIsActive()) {
             if (gamepad1.left_trigger > 0.5)
@@ -52,16 +49,10 @@ public class TempDrive extends OpMode8696 {
 
             cubeLinearArm.setPower(armPower);
 
-//            if (gamepad2.a) {
-//                if (!wasA) {
-//                    grabber.setPosition(servo ? 0.7 : 1); // not grabbing to grabbing
-//                    servo = !servo;
-//                }
-//                wasA = true;
-//            } else
-//                wasA = false;
 
             runButtonEvents();
+
+            telemetry.update();
         }
     }
 
