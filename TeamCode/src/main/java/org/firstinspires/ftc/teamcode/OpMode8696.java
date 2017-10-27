@@ -76,23 +76,7 @@ public abstract class OpMode8696 extends LinearOpMode {
     }
 
     private void runButtonEvents(int gamepad) {
-        int currPressed = 0;
-
-        try {
-            byte[] arr = ((gamepad == 1) ? gamepad1 : gamepad2).toByteArray(); // select the right gamepad
-            int len = arr.length;
-
-            // extract the button data from the byte array
-            currPressed += arr[len-3]; currPressed = currPressed << 8;
-            currPressed += arr[len-2] & 0b11111111;
-
-            // the left-most bit of the byte is counted as the "negative" part,
-            // and the sign is maintained when it becomes an int.
-            // " & 0b11111111" limits it to the 8 bits I want.
-            // This isn't an issue with the first part because there are only 7 used bits.
-        } catch (RobotCoreException e) {
-            e.printStackTrace();
-        }
+        int currPressed = getButtonsPressed(gamepad);
 
         if (currPressed >= 0 && wasPressed[gamepad] >= 0) { // don't bother running if no buttons pressed
             int onDown    =  currPressed & ~wasPressed[gamepad];
@@ -111,6 +95,28 @@ public abstract class OpMode8696 extends LinearOpMode {
         }
 
         wasPressed[gamepad] = currPressed;
+    }
+    
+    private int getButtonsPressed(int gamepad) {
+        int currPressed = 0;
+        
+        try {
+            byte[] arr = ((gamepad == 1) ? gamepad1 : gamepad2).toByteArray(); // select the right gamepad
+            int len = arr.length;
+
+            // extract the button data from the byte array
+            currPressed += arr[len-3]; currPressed = currPressed << 8;
+            currPressed += arr[len-2] & 0b11111111;
+
+            // the left-most bit of the byte is counted as the "negative" part,
+            // and the sign is maintained when it becomes an int.
+            // " & 0b11111111" limits it to the 8 bits I want.
+            // This isn't an issue with the first part because there are only 7 used bits.
+        } catch (RobotCoreException e) {
+            e.printStackTrace();
+        }
+        
+        return currPressed;
     }
 
     /**
