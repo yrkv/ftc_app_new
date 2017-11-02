@@ -47,6 +47,7 @@ public class TempDrive extends OpMode8696 {
 
             double armPower = gamepad2.dpad_up ?  -0.5 : (gamepad2.dpad_down ?  0.5 : 0);
 
+
             cubeLinearArm.setPower(armPower);
 
 
