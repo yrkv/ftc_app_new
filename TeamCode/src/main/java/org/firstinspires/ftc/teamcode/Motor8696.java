@@ -149,8 +149,10 @@ public class Motor8696 implements DcMotor {
 
     @Override
     public void setPower(double power) {
+        power = power * scalePower;
+        power = (power > 1) ? 1 : ((power < -1) ? -1 : power);
         currentPower = power;
-        motor.setPower(power * scalePower);
+        motor.setPower(power);
     }
 
     @Override
