@@ -11,10 +11,15 @@ import com.qualcomm.robotcore.hardware.configuration.MotorConfigurationType;
 public class Motor8696 implements DcMotor {
     private DcMotor motor;
 
+    public static final int COUNTS_PER_REVOLUTION = 1440; // TODO: this may or may not be correct.
+
     private double maxPower = 1;
     private double currentPower = 0;
 
     private double scalePower = 1;
+
+    private int prevCounts = 0;
+    private boolean resetEncoder = true;
 
     public Motor8696(DcMotor motor) {
         this.motor = motor;
@@ -33,6 +38,14 @@ public class Motor8696 implements DcMotor {
         maxPower += max;
     }
 
+    public void setRelativeTarget(int counts) {
+        setTargetPosition(prevCounts + counts);
+    }
+
+    public void storePosition() {
+        prevCounts = getCurrentPosition();
+    }
+
     public void addPower(double power) {
         currentPower += power;
     }
@@ -41,6 +54,17 @@ public class Motor8696 implements DcMotor {
         double power = currentPower / maxPower;
         power = (power > 1) ? 1 : ((power < -1) ? -1 : power);
         setPower(power);
+
+        currentPower = 0; // reset everything after done using it in an iteration.
+        maxPower = 0;
+    }
+
+    public static boolean motorsBusy(Motor8696[] motors) {
+        for (Motor8696 motor : motors) {
+            if (!motor.isBusy())
+                return false;
+        }
+        return true;
     }
 
     @Override

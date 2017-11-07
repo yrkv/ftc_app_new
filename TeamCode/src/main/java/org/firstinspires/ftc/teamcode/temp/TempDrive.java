@@ -1,49 +1,52 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.temp;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.Button;
+import org.firstinspires.ftc.teamcode.ButtonEvent;
+
 /**
  * Created by USER on 10/13/2017.
  */
 
-@TeleOp(name="tempDrive", group="Linear Opmode")
-public class TempDrive extends OpMode8696 {
-    DcMotor cubeLinearArm;
-    Servo grabber;
+@TeleOp(name="tempDrive", group="Temp")
+public class TempDrive extends TempOpMode {
+
+    private int reverse = 1;
 
     @Override
     public void runOpMode() throws InterruptedException {
         initRobot();
 
-        cubeLinearArm = hardwareMap.get(DcMotor.class, "cubeArm");
-        grabber = hardwareMap.get(Servo.class, "grabber");
-
-        cubeLinearArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
 //        initVuforia();
 
         addButtonEvent(2, new ButtonEvent(Button.A) {
-            private double grabbing = 1;
-            private double notGrabbing = 0.7;
+            private boolean grabbing = true;
 
             void onDown() {
-                double pos = grabber.getPosition();
-                grabber.setPosition((pos == grabbing) ? notGrabbing : grabbing);
+                grabber1.setPosition(grabbing ? 1 : 0);
+                grabber2.setPosition(grabbing ? 1 : 0);
+                grabbing = !grabbing;
+            }
+        });
+
+        addButtonEvent(1, new ButtonEvent(Button.X) {
+            void onDown() {
+                reverse *= -1;
             }
         });
 
         waitForStart();
 
-
         while (opModeIsActive()) {
             if (gamepad1.left_trigger > 0.5)
-                drive(0.75);
+                drive(0.2 * reverse);
             else if (gamepad1.right_trigger > 0.5)
                 driveForward(0.3);
             else
-                drive(0.4);
+                drive(0.4 * reverse);
 
             double armPower = gamepad2.dpad_up ?  -0.5 : (gamepad2.dpad_down ?  0.5 : 0);
 

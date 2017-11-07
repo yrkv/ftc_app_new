@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IntegratingGyroscope;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Vuforia;
 
@@ -17,76 +18,56 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
 /*
-DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-        Version 2, December 2004
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+                    Version 2, December 2004
 
-        Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+ Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
 
-Everyone is permitted to copy and distribute verbatim or modified
-copies of this license document, and changing it is allowed as long
-as the name is changed.
+ Everyone is permitted to copy and distribute verbatim or modified
+ copies of this license document, and changing it is allowed as long
+ as the name is changed.
 
-DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
-0. You just DO WHAT THE FUCK YOU WANT TO.
+  0. You just DO WHAT THE FUCK YOU WANT TO.
+
 */
 
 public abstract class OpMode8696 extends LinearOpMode {
 
-    Motor8696 leftBack;
-    Motor8696 rightBack;
-    Motor8696 leftFront;
-    Motor8696 rightFront;
+    protected Motor8696 leftBack;
+    protected Motor8696 rightBack;
+    protected Motor8696 leftFront;
+    protected Motor8696 rightFront;
 
-    Motor8696[] motors = {leftBack, rightBack, leftFront, rightFront};
+    private ElapsedTime runtime = new ElapsedTime();
+
+    protected Motor8696[] motors = new Motor8696[4];
 
     private ButtonEvent[][] buttonEvents = new ButtonEvent[2][Button.values().length];
 
     private int[] wasPressed = new int[2];
 
-    VuforiaLocalizer vuforia;
+    protected VuforiaLocalizer vuforia;
     VuforiaTrackables relicTrackables;
 
-    NavxMicroNavigationSensor navx;
-    IntegratingGyroscope gyro;
+    protected NavxMicroNavigationSensor navx;
+    protected IntegratingGyroscope gyro;
 
     AngularVelocity rates;
     Orientation angles;
 
-
-    protected void initRobot() {
+    protected void initMotors() {
         leftBack   = new Motor8696(hardwareMap.get(DcMotor.class, "leftBack"));
         rightBack  = new Motor8696(hardwareMap.get(DcMotor.class, "rightBack"));
         leftFront  = new Motor8696(hardwareMap.get(DcMotor.class, "leftFront"));
         rightFront = new Motor8696(hardwareMap.get(DcMotor.class, "rightFront"));
 
-        navx = hardwareMap.get(NavxMicroNavigationSensor.class, "navx");
-        gyro = navx;
-
-        telemetry.log().add("Gyro Calibrating. Do Not Move!");
-
-        // Wait until the gyro calibration is complete
-        int loop = 0;
-        while (navx.isCalibrating())  {
-            loop++;
-            telemetry.addData(">", loop);
-            telemetry.update();
-            sleep(50);
-        }
-        telemetry.log().clear(); telemetry.log().add("Gyro Calibrated. Press Start.");
-        telemetry.clear(); telemetry.update();
-
-        leftBack  .setDirection(DcMotor.Direction.FORWARD);
-        rightBack .setDirection(DcMotor.Direction.REVERSE);
-        leftFront .setDirection(DcMotor.Direction.FORWARD);
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
-
-        rightBack .setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        leftBack  .setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        leftFront .setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
+        motors[0] = leftBack;
+        motors[1] = rightBack;
+        motors[2] = leftFront;
+        motors[3] = rightFront;
     }
 
     protected void initVuforia() {
@@ -109,9 +90,65 @@ public abstract class OpMode8696 extends LinearOpMode {
 
     }
 
-    protected OpMode8696 addButtonEvent(int gamepad, ButtonEvent event) {
+    void tempAutoDrive(double inches, double power, double timeoutSeconds) {
+        for (Motor8696 motor : motors) {
+            motor.storePosition();
+            motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            motor.setRelativeTarget((int) (inches / (4 * Math.PI) * Motor8696.COUNTS_PER_REVOLUTION));
+
+            motor.setPower(power);
+        }
+
+        runtime.reset();
+
+        while (opModeIsActive() &&
+                runtime.seconds() < timeoutSeconds &&
+                Motor8696.motorsBusy(motors)) {
+            idle();
+        }
+
+        for (Motor8696 motor : motors) {
+            motor.setPower(0);
+            motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
+    void tempAutoTurn(double angle, double power, double timeoutSeconds) {
+        runtime.reset();
+
+        while (onHeading(angle, power, 0.5) &&
+                runtime.seconds() < timeoutSeconds) {
+            idle();
+        }
+    }
+
+    private boolean onHeading(double angle, double power, double maxError) {
+        getGyroData();
+
+        double currentRotation = angles.firstAngle;
+
+        double diff = angle - currentRotation;
+        while (Math.abs(diff) >= 180) {
+            angle += (diff >= 180) ? -180 : 180;
+            diff = angle - currentRotation;
+        }
+
+        if (Math.abs(diff) > maxError) {
+            power = 180 / diff * power;
+
+            leftBack  .setPower( power);
+            rightBack .setPower(-power);
+            leftFront .setPower( power);
+            rightFront.setPower(-power);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected void addButtonEvent(int gamepad, ButtonEvent event) {
         buttonEvents[gamepad-1][event.button.ordinal()] = event;
-        return this;
     }
 
     protected void runButtonEvents() {
