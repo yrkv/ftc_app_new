@@ -214,12 +214,17 @@ public abstract class OpMode8696 extends LinearOpMode {
      * Calculate the angles for driving and move/rotate the robot.
      */
     protected void mecanumTeleOpDrive() {
-        double leftStickAngle  = Math.atan(gamepad1.left_stick_y  / gamepad1.left_stick_x);
-        double rightStickAngle = Math.atan(gamepad1.right_stick_y / gamepad1.right_stick_x);
+        double ly = gamepad1.left_stick_y;
+        double lx = gamepad1.left_stick_x;
+        double ry = gamepad1.right_stick_y;
+        double rx = gamepad1.right_stick_x;
 
-        for (int i = 0; i < motors.length; i++)
-            motors[i].setScalePower(Math.sqrt(Math.pow(gamepad1.left_stick_y, 2)
-                                            + Math.pow(gamepad1.left_stick_x, 2)));
+        double leftStickAngle  = (lx != 0) ? Math.atan(ly / lx) : 0;
+        double rightStickAngle = (rx != 0) ? Math.atan(ry / rx) : 0;
+
+        for (Motor8696 motor : motors)
+            motor.setScalePower(Math.sqrt(Math.pow(gamepad1.left_stick_y, 2)
+                                        + Math.pow(gamepad1.left_stick_x, 2)));
 
         getGyroData();
         driveDirectionRelativeToRobot(leftStickAngle);
