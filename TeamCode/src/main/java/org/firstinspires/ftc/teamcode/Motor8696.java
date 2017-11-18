@@ -53,10 +53,19 @@ public class Motor8696 implements DcMotor {
     public void setPower() {
         double power = currentPower / maxPower;
         power = (power > 1) ? 1 : ((power < -1) ? -1 : power);
+        if (Double.isNaN(power)) power = 0;
         setPower(power);
 
         currentPower = 0; // reset everything after done using it in an iteration.
         maxPower = 0;
+    }
+
+    public double getCurrentPower() {
+        return currentPower;
+    }
+
+    public double getMaxPower() {
+        return maxPower;
     }
 
     public static boolean motorsBusy(Motor8696[] motors) {

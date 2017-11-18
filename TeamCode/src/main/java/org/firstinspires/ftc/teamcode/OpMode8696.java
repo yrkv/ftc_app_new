@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IntegratingGyroscope;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Vuforia;
 
@@ -16,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.internal.opengl.models.MeshObject;
 
 /*
             DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
@@ -41,7 +43,7 @@ public abstract class OpMode8696 extends LinearOpMode {
     protected Motor8696 leftFront;
     protected Motor8696 rightFront;
 
-    private ElapsedTime runtime = new ElapsedTime();
+    protected ElapsedTime runtime = new ElapsedTime();
 
     protected Motor8696[] motors = new Motor8696[4];
 
@@ -56,13 +58,13 @@ public abstract class OpMode8696 extends LinearOpMode {
     protected IntegratingGyroscope gyro;
 
     AngularVelocity rates;
-    Orientation angles;
+    protected Orientation angles;
 
     protected void initMotors() {
-        leftBack   = new Motor8696(hardwareMap.get(DcMotor.class, "leftBack"));
-        rightBack  = new Motor8696(hardwareMap.get(DcMotor.class, "rightBack"));
-        leftFront  = new Motor8696(hardwareMap.get(DcMotor.class, "leftFront"));
-        rightFront = new Motor8696(hardwareMap.get(DcMotor.class, "rightFront"));
+        leftBack   = new Motor8696(hardwareMap.get(DcMotor.class, "leftBack"));  //2
+        rightBack  = new Motor8696(hardwareMap.get(DcMotor.class, "rightBack")); //3
+        leftFront  = new Motor8696(hardwareMap.get(DcMotor.class, "leftFront")); //0
+        rightFront = new Motor8696(hardwareMap.get(DcMotor.class, "rightFront"));//1
 
         motors[0] = leftBack;
         motors[1] = rightBack;
@@ -90,63 +92,6 @@ public abstract class OpMode8696 extends LinearOpMode {
 
     }
 
-    void tempAutoDrive(double inches, double power, double timeoutSeconds) {
-        for (Motor8696 motor : motors) {
-            motor.storePosition();
-            motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            motor.setRelativeTarget((int) (inches / (4 * Math.PI) * Motor8696.COUNTS_PER_REVOLUTION));
-
-            motor.setPower(power);
-        }
-
-        runtime.reset();
-
-        while (opModeIsActive() &&
-                runtime.seconds() < timeoutSeconds &&
-                Motor8696.motorsBusy(motors)) {
-            idle();
-        }
-
-        for (Motor8696 motor : motors) {
-            motor.setPower(0);
-            motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-    }
-
-    void tempAutoTurn(double angle, double power, double timeoutSeconds) {
-        runtime.reset();
-
-        while (onHeading(angle, power, 0.5) &&
-                runtime.seconds() < timeoutSeconds) {
-            idle();
-        }
-    }
-
-    private boolean onHeading(double angle, double power, double maxError) {
-        getGyroData();
-
-        double currentRotation = angles.firstAngle;
-
-        double diff = angle - currentRotation;
-        while (Math.abs(diff) >= 180) {
-            angle += (diff >= 180) ? -180 : 180;
-            diff = angle - currentRotation;
-        }
-
-        if (Math.abs(diff) > maxError) {
-            power = 180 / diff * power;
-
-            leftBack  .setPower( power);
-            rightBack .setPower(-power);
-            leftFront .setPower( power);
-            rightFront.setPower(-power);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     protected void addButtonEvent(int gamepad, ButtonEvent event) {
         buttonEvents[gamepad-1][event.button.ordinal()] = event;
     }
@@ -158,7 +103,7 @@ public abstract class OpMode8696 extends LinearOpMode {
 
     private void runButtonEvents(int gamepad) {
         int currPressed = getButtonsPressed(gamepad);
-        
+
         gamepad--;
 
         if (currPressed >= 0 && wasPressed[gamepad] >= 0) { // don't bother running if no buttons pressed
@@ -210,66 +155,7 @@ public abstract class OpMode8696 extends LinearOpMode {
         return currPressed;
     }
 
-    /**
-     * Calculate the angles for driving and move/rotate the robot.
-     */
-    protected void mecanumTeleOpDrive() {
-        double ly = gamepad1.left_stick_y;
-        double lx = gamepad1.left_stick_x;
-        double ry = gamepad1.right_stick_y;
-        double rx = gamepad1.right_stick_x;
-
-        double leftStickAngle  = (lx != 0) ? Math.atan(ly / lx) : 0;
-        double rightStickAngle = (rx != 0) ? Math.atan(ry / rx) : 0;
-
-        for (Motor8696 motor : motors)
-            motor.setScalePower(Math.sqrt(Math.pow(gamepad1.left_stick_y, 2)
-                                        + Math.pow(gamepad1.left_stick_x, 2)));
-
-        getGyroData();
-        driveDirectionRelativeToRobot(leftStickAngle);
-        rotateToAngleTeleOp(rightStickAngle);
-
-        runMotors();
-    }
-
-    /**
-     * Drive the robot in a specified direction regardless of its
-     * current rotation. Meant to be used with mecanum wheels.
-     *
-     * @param angle angle that the robot should move towards. Starts at standard position.
-     */
-    private void driveDirectionRelativeToRobot(double angle) {
-        angle = (angle - angles.firstAngle) * Math.PI / 180;
-        leftBack  .addPower(Math.sin(angle) - Math.cos(angle), Math.sqrt(2));
-        rightBack .addPower(Math.sin(angle) + Math.cos(angle), Math.sqrt(2));
-        leftFront .addPower(Math.sin(angle) - Math.cos(angle), Math.sqrt(2));
-        rightFront.addPower(Math.sin(angle) + Math.cos(angle), Math.sqrt(2));
-    }
-
-    /**
-     * Rotate the robot a bit toward a specified angle.
-     *
-     * @param angle the target angle
-     */
-    private void rotateToAngleTeleOp(double angle) {
-        double currentRotation = angles.firstAngle;
-
-        double diff = angle - currentRotation;
-        while (Math.abs(diff) >= 180) {
-            angle += (diff >= 180) ? -180 : 180;
-            diff = angle - currentRotation;
-        }
-
-        double power = 180 / diff;
-
-        leftBack  .addPower( power, 1);
-        rightBack .addPower(-power, 1);
-        leftFront .addPower( power, 1);
-        rightFront.addPower(-power, 1);
-    }
-
-    private void runMotors() {
+    protected void runMotors() {
         for (Motor8696 motor : motors) {
             motor.setPower();
         }
@@ -278,8 +164,8 @@ public abstract class OpMode8696 extends LinearOpMode {
     /**
      * Stores the gyro data into instance fields.
      */
-    private void getGyroData() {
+    protected void getGyroData() {
         rates = gyro.getAngularVelocity(AngleUnit.DEGREES);
-        angles = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        angles = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS);
     }
 }

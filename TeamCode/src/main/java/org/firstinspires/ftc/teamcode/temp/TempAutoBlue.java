@@ -23,28 +23,6 @@ public class TempAutoBlue extends TempOpMode {
 
         cubeLinearArm.setPower(0);
 
-        boolean run = false;
-        boolean which = false;
-
-        for (double pos = 0.2; pos < 1; pos += 0.01) {
-            ballPoosher.setPosition(pos);
-            sleep(10);
-
-            if (colorSensor.red() > 3 || colorSensor.blue() > 3) {
-                run = true;
-                which = colorSensor.red() > colorSensor.blue();
-                break;
-            }
-        }
-
-        if (run) {
-            if (which) {
-                ghettoTurn(0.25);
-            } else {
-                ghettoTurn(-0.25);
-            }
-
-            ballPoosher.setPosition(1);
-        }
+        pushBall(BLUE);
     }
 }

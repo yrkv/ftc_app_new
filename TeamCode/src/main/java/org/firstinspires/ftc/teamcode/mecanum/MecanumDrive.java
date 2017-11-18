@@ -15,7 +15,7 @@ public class MecanumDrive extends MecanumOpMode {
 //        initVuforia();
 
         waitForStart();
-
+        telemetry.log().clear();
 
         while (opModeIsActive()) {
             if (gamepad1.a)
@@ -26,6 +26,8 @@ public class MecanumDrive extends MecanumOpMode {
             runButtonEvents();
 
             telemetry.update();
+
+            idle();
         }
     }
 

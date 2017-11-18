@@ -11,9 +11,9 @@ public abstract class ButtonEvent {
         this.button = button;
     }
 
-    void onDown() {}
-    void onUp() {}
+    public void onDown() {}
+    public void onUp() {}
 
-    void whileDown() {}
-    void whileUp() {}
+    public void whileDown() {}
+    public void whileUp() {}
 }
