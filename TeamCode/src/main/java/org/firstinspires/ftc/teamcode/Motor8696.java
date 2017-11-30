@@ -21,6 +21,8 @@ public class Motor8696 implements DcMotor {
     private int prevCounts = 0;
     private boolean resetEncoder = true;
 
+    private int lastPosition = 0;
+
     public Motor8696(DcMotor motor) {
         this.motor = motor;
     }
@@ -46,6 +48,10 @@ public class Motor8696 implements DcMotor {
         prevCounts = getCurrentPosition();
     }
 
+    public void saveCurrentPosition() {
+        lastPosition = getCurrentPosition();
+    }
+
     public void addPower(double power) {
         currentPower += power;
     }
@@ -56,8 +62,12 @@ public class Motor8696 implements DcMotor {
         if (Double.isNaN(power)) power = 0;
         setPower(power);
 
-        currentPower = 0; // reset everything after done using it in an iteration.
-        maxPower = 0;
+        reset(); // reset everything after done using it in an iteration.
+    }
+
+    public void reset() {
+        currentPower = 0;
+        maxPower = 1;
     }
 
     public double getCurrentPower() {

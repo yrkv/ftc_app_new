@@ -33,6 +33,7 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.view.View;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -80,12 +81,22 @@ public class SensorMRColor extends LinearOpMode {
     boolean bLedOn = true;
 
     // get a reference to our ColorSensor object.
-    colorSensor = hardwareMap.get(ColorSensor.class, "color");
+    colorSensor = hardwareMap.get(ModernRoboticsI2cColorSensor.class, "color");
 
     // Set the LED in the beginning
     colorSensor.enableLed(bLedOn);
 
     // wait for the start button to be pressed.
+
+    telemetry.addData("color", colorSensor.getConnectionInfo());
+    telemetry.addData("color", colorSensor.getI2cAddress().get8Bit());
+    telemetry.addData("color", colorSensor.getManufacturer());
+
+    telemetry.update();
+
+    colorSensor.enableLed(false);
+    colorSensor.enableLed(true);
+
     waitForStart();
 
     // while the op mode is active, loop and read the RGB data.

@@ -21,7 +21,7 @@ public class MecanumDrive extends MecanumOpMode {
             if (gamepad1.a)
                 driveForward(0.5);
             else
-                mecanumTeleOpDrive();
+                mecanumTeleOpDrive(true);
 
             runButtonEvents();
 
