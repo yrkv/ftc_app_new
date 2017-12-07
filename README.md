@@ -1,4 +1,8 @@
 ## Welcome!
+
+# new link for this project: https://github.com/yrkv/ftc_app_relic_recovery
+I changed to a new one because I needed to update. I forked this time, so I shouldn't need to transfer again. We will have another project later with what others make, but that doesn't exist yet.
+
 This GitHub repository contains the source code that is used to build an Android app to control a *FIRST* Tech Challenge competition robot.  To use this SDK, download/clone the entire project to your local computer.
 
 If you are new to the *FIRST* Tech Challenge software and control system, you should visit the online wiki to learn how to install, configure, and use the software and control system:
